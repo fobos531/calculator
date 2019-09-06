@@ -5,6 +5,7 @@ html, body {
 
 body {
     background: url(https://source.unsplash.com/random/1920x1080);
+    font-family: 'Manjari', sans-serif;
 }
 
 #outer {
@@ -38,13 +39,14 @@ body {
     right: 5px;
 }
 
-#zero {
-    grid-column-start: 1;
-    grid-column-end: 3;
+.display div {
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }
 
 .buttons {
-    font-family: 'Manjari', sans-serif;
+
     color: white;
     font-size: 1.2em;
     grid-column: auto / auto;
@@ -60,4 +62,8 @@ body {
 
 .buttons:hover {
     transform: scale(1.05);
+}
+#zero {
+    grid-column-start: 1;
+    grid-column-end: 3;
 }
