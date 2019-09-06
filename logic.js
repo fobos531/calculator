@@ -70,7 +70,7 @@ function pressButton(e) {
 }
 
 function keypressHandler (e) {
-    const keyCodes = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 187, 189, 191, 13, 8];
+    const keyCodes = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 187, 189, 190, 191, 13, 8];
     if (keyCodes.includes(e.keyCode)) {
         if(e.keyCode == 8) { //Backspace
             display.textContent = display.textContent.slice(0, -1); return;
