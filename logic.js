@@ -2,7 +2,6 @@ const add = (a,b) => Number(a) + Number(b);
 const subtract = (a,b) => Number(a) - Number(b);
 const multiply = (a,b) => Number(a) * Number(b);
 const divide = (a,b) => Number(a) / Number(b);
-
 const operate = (op, a, b) => {
     switch(op) {
         case "+": return add(a,b);
@@ -13,84 +12,75 @@ const operate = (op, a, b) => {
     }
 }
 
-const display = document.querySelector('.display span');
-let previousExpr = document.getElementById("previousExpr");
-
-let previousOperator = "";
+let display = document.querySelector('.display span');
+let currentExpression = document.getElementById("currentExpression");
 let buttons = Array.from(document.querySelectorAll('.buttons'));
-//add event listener to every button
-buttons.forEach(button => button.addEventListener('click', pressButton));
 
-
-function calculateMulDiv(expression) {
-    let toEval = expression.split(/(\d+)/gi); // properly split the expression if there are multi-digit numbers
-    toEval.pop();
-    toEval.shift();
-   //  let toEval = previousExpr.match(/(\d[/*]\d)/gi).join("").split(""); //takes out parts with * and / from expression and places
-    // the accompanying operands next to them
-    let results = [];
-    let firstOperand;
-    let secondOperand;
-    let operator;
-    for (let i=0; i < expression.length; i++) {
-        if (i % 3 == 0) firstOperand = toEval.shift(); //first iteration
-        else if (i%3 == 1) operator = toEval.shift();
-        else if (i%3 == 2) {
-            secondOperand = toEval.shift();
-            results.push(operate(operator, firstOperand, secondOperand));
-        }
+function evaluateExpression (expr) {
+    let expression = expr.split(/([+*\/-])/gi);
+    // deal with * and /
+    for (let i = 0; i < expression.length; i++){
+		if (expression[i] === '*' || expression[i] === '/'){
+			const result = operate(expression[i], expression[i-1], expression[i+1]);
+			expression.splice(i-1, 3, result);
+			i = i-1;
+		}
     }
-    return results[0] + '';
-}
-
-
-function evEx (previousExpr) {
-    let regex = /(\d+[/*]\d+)/gi;
-    //replace original expression with calculated multiplication and division, if there are any
-    let expression = previousExpr.replace(regex, str => calculateMulDiv(str)).split(/(\d+)/gi);
-    expression.pop(); expression.shift();
-    const exprLength = expression.length;
-   // let expression = previousExpr.split("");
-    let firstOperand;
-    let secondOperand;
-    let operator;
-    for (let i=1; i <= exprLength; i++) {
-        if (i == 1) firstOperand = expression.shift(); //first iteration
-        else if (i%2 == 0) operator = expression.shift();
-        else if (i%2 != 0) {
-            secondOperand = expression.shift();
-            firstOperand = operate(operator, firstOperand, secondOperand);
-        }
-    }
-    return firstOperand; //firstOperand is the actual result
+    // deal with + and -
+    for (let i = 0; i < expression.length; i++){
+		if (expression[i] === '+' || expression[i] === '-'){
+			const result = operate(expression[i], expression[i-1], expression[i+1]);
+			expression.splice(i-1, 3, result);
+			i = i-1;
+		}
+	}
+    return expression.join("");
 }
 
 function pressOperator(operator, expr) {
     if (operator == "=") {
-        let final = previousExpr.textContent + expr;
-        console.log(evEx(final));
-        display.textContent = evEx(final);
-        previousExpr.textContent = "";
+        let final = currentExpression.textContent + expr;
+        display.textContent = evaluateExpression(final);
+        currentExpression.textContent = "";
     }
-    //console.log(operate(previousOperator, expr, previousExpr)); //previous expression
+    else if (operator == "+/-") {
+        let arr = [...expr];
+        arr.includes("-") ? arr.splice(0,1) : arr.unshift("-");
+        display.textContent = arr.join("");
+    }
     else {
-        previousExpr.textContent += expr + operator;
+        currentExpression.textContent += expr + operator;
         display.textContent = "0";
-        previousOperator = operator;
-       // previousExpr = operate(operator, previousExpr, expr);
     }
 }
 
 function pressButton(e) {
     switch (e.target.textContent) {
-        case "Clear": display.textContent = ""; previousExpr.textContent = ""; break;
+        case "Clear": display.textContent = ""; currentExpression.textContent = ""; break;
         case "⌫": display.textContent = display.textContent.slice(0, -1); break;
         case "/": pressOperator("/", display.textContent); break;
         case "*": pressOperator("*", display.textContent); break;
         case "-": pressOperator("-", display.textContent); break;
         case "+": pressOperator("+", display.textContent); break;
+        case "+/-": pressOperator("+/-", display.textContent); break;
         case "=": pressOperator("=", display.textContent); break;
         default: if (display.textContent == 0) display.textContent = e.target.textContent;
                 else display.textContent += e.target.textContent; break;
     }
 }
+
+function keypressHandler (e) {
+    const keyCodes = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 187, 189, 191, 13, 8];
+    if (keyCodes.includes(e.keyCode)) {
+        if(e.keyCode == 8) { //Backspace
+            display.textContent = display.textContent.slice(0, -1); return;
+        }
+        if (e.key == "Enter") {
+            display.textContent = evaluateExpression(display.textContent);
+            return;
+        }
+        display.textContent += e.key;
+    }
+}
+buttons.forEach(button => button.addEventListener('click', pressButton));
+window.addEventListener('keydown', keypressHandler);
